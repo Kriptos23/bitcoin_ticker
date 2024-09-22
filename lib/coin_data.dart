@@ -29,3 +29,6 @@ const List<String> cryptoList = [
 ];
 
 class CoinData {}
+
+String selected = "Choose currency first";
+String costOfSelected = '\$';
