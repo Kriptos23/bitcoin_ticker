@@ -36,7 +36,7 @@ class _PriceScreenState extends State<PriceScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),
-              child:  Padding(
+              child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
                 child: Text(
                   '1 BTC = $costOfSelected $selected',
@@ -54,9 +54,9 @@ class _PriceScreenState extends State<PriceScreen> {
             alignment: Alignment.center,
             padding: const EdgeInsets.only(bottom: 30.0),
             color: Colors.lightBlue,
-            child: Picker('https://rest.coinapi.io/v1/exchangerate/:USD/:BTC'),
+            child: Picker(),
           ),
-          Text('the picked one is now: $selected by num: ',
+          Text('the picked one is now: $selected or $dropdownValue: ',
               style: const TextStyle(color: Colors.red)),
           // FloatingActionButton(onPressed: (){
           //   setState(() {
@@ -70,21 +70,6 @@ class _PriceScreenState extends State<PriceScreen> {
   }
 
   ///////////////////////////////FUNCTIONS/////////////////////////////////////
-
-Future<dynamic> getData(String Selected) async{
-  Response response = await http.get(Uri.parse('https://rest.coinapi'
-      '.io/v1/exchangerate/BTC/$selected?apikey=082D2371-492E-432A-907C'
-      '-611B9EC00A82'
-      ''));
-  String data = response.body;
-  setState(() {
-    var decodedData =jsonDecode(data);
-    costOfSelected = decodedData['rate'].toString();
-    print(decodedData['time']);
-  });
-  print("for the $selected the btc cost is: $costOfSelected");
-}
-
   List<Widget> makeWidgetListFromStringList(List<String> list) {
     List<Widget> widgets = [];
     for (String element in list) {
@@ -93,9 +78,27 @@ Future<dynamic> getData(String Selected) async{
     return widgets;
   }
 
-  Widget Picker(String url) {
+  Future<dynamic> getData(String Selected) async {
+    Response response = await http.get(Uri.parse('https://rest.coinapi'
+        '.io/v1/exchangerate/BTC/$selected?apikey=082D2371-492E-432A-907C'
+        '-611B9EC00A82'
+        ''));
+    String data = response.body;
+    setState(() {
+      var decodedData = jsonDecode(data);
+      costOfSelected = decodedData['rate'].toString();
+      print(decodedData['time']);
+    });
+    print("for the $selected the btc cost is: $costOfSelected");
+    print('Get data func here: the dropdownValue now is: $dropdownValue');
+  }
+
+  //Return a picker widget based on what operation system is running
+  Widget Picker() {
     if (kIsWeb) {
-      return IOS_Picker(); //for some reason we should check if we are
+      // return IOS_Picker();
+      return And_Picker(dropdownValue);
+      //for some reason we should check if we are
       // running
       // on web before any other platform
     } else if (Platform.isAndroid) {
@@ -116,7 +119,7 @@ Future<dynamic> getData(String Selected) async{
         onSelectedItemChanged: (selectedPicker) {
           // print('selected: $selectedPicker');
           selected = currenciesList[selectedPicker];
-          print(selected);
+          // print(selected);
           setState(() {
             getData(selected);
           });
@@ -129,9 +132,9 @@ Future<dynamic> getData(String Selected) async{
         children: makeWidgetListFromStringList(currenciesList));
   }
 
-  Widget And_Picker(String dropdownValue) {
+  Widget And_Picker(String droppedValue) {
     return DropdownButton<String>(
-        value: dropdownValue,
+        value: droppedValue,
         style: const TextStyle(
             color: Colors.black, textBaseline: TextBaseline.alphabetic),
         dropdownColor: Colors.white,
@@ -144,8 +147,12 @@ Future<dynamic> getData(String Selected) async{
         }).toList(),
         onChanged: (String? value) {
           // This is called when the user selects an item.
+          print('The selected one from the Android Picker is the $value');
           setState(() {
             dropdownValue = value!;
+            print('Dropdown value is: $dropdownValue');
+            selected = value;
+            getData(value);
           });
         });
   }

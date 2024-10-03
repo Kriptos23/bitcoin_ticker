@@ -1,3 +1,6 @@
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 const List<String> currenciesList = [
   'AUD',
   'BRL',
@@ -28,7 +31,11 @@ const List<String> cryptoList = [
   'LTC',
 ];
 
-class CoinData {}
+class CoinData {
+
+}
 
 String selected = "Choose currency first";
 String costOfSelected = '\$';
+
+String dropdownValue = currenciesList.first;
