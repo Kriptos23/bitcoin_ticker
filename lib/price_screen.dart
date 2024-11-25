@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:http/http.dart';
 import 'coin_data.dart';
 import 'dart:io' show Platform; //using to check what operating system is the
 // app is running, android, ios or web or any other
 import 'package:flutter/foundation.dart'; //to check if we are running on web
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+
 
 class PriceScreen extends StatefulWidget {
   const PriceScreen({super.key});
@@ -36,7 +34,7 @@ class _PriceScreenState extends State<PriceScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),
-              child: Padding(
+              child:  Padding(
                 padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
                 child: Text(
                   '1 BTC = $costOfSelected $selected',
@@ -78,20 +76,6 @@ class _PriceScreenState extends State<PriceScreen> {
     return widgets;
   }
 
-  Future<dynamic> getData(String Selected) async {
-    Response response = await http.get(Uri.parse('https://rest.coinapi'
-        '.io/v1/exchangerate/BTC/$selected?apikey=082D2371-492E-432A-907C'
-        '-611B9EC00A82'
-        ''));
-    String data = response.body;
-    setState(() {
-      var decodedData = jsonDecode(data);
-      costOfSelected = decodedData['rate'].toString();
-      print(decodedData['time']);
-    });
-    print("for the $selected the btc cost is: $costOfSelected");
-    print('Get data func here: the dropdownValue now is: $dropdownValue');
-  }
 
   //Return a picker widget based on what operation system is running
   Widget Picker() {
@@ -110,18 +94,19 @@ class _PriceScreenState extends State<PriceScreen> {
       return And_Picker(dropdownValue);
     }
   }
+  CoinData coinData = CoinData();
 
   Widget IOS_Picker() {
     //https://rest.coinapi.io/v1/exchangerate/:USD/:BTC
-
     return CupertinoPicker(
         itemExtent: 32,
         onSelectedItemChanged: (selectedPicker) {
           // print('selected: $selectedPicker');
           selected = currenciesList[selectedPicker];
           // print(selected);
-          setState(() {
-            getData(selected);
+          setState(() async{
+            await coinData.getData(selected);
+            // costOfSelected = coinData.decodedData['rate'].toString();
           });
           // setState(() async {
           //   responce = await http.get('$url' as Uri);
@@ -145,14 +130,14 @@ class _PriceScreenState extends State<PriceScreen> {
             child: Text(value),
           );
         }).toList(),
-        onChanged: (String? value) {
+        onChanged: (String? value) async{
           // This is called when the user selects an item.
           print('The selected one from the Android Picker is the $value');
-          setState(() {
+          await coinData.getData(value!);
+          setState((){
             dropdownValue = value!;
-            print('Dropdown value is: $dropdownValue');
+            print ('Dropdown value is: $dropdownValue');
             selected = value;
-            getData(value);
           });
         });
   }
