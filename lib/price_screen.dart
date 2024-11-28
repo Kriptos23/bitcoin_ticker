@@ -4,7 +4,8 @@ import 'coin_data.dart';
 import 'dart:io' show Platform; //using to check what operating system is the
 // app is running, android, ios or web or any other
 import 'package:flutter/foundation.dart'; //to check if we are running on web
-
+import 'Utilities/style.dart';
+import 'Utilities/Containers.dart';
 
 class PriceScreen extends StatefulWidget {
   const PriceScreen({super.key});
@@ -17,6 +18,13 @@ class _PriceScreenState extends State<PriceScreen> {
   String dropdownValue = currenciesList.first;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    coinData.getData(dropdownValue);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -26,32 +34,14 @@ class _PriceScreenState extends State<PriceScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
-            child: Card(
-              color: Colors.lightBlueAccent,
-              elevation: 5.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child:  Padding(
-                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                child: Text(
-                  '1 BTC = $costOfSelected $selected',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          CurrencyContainer(cryptoList2: cryptoList, num: 0, crypto: Bitcoin),
+          CurrencyContainer(cryptoList2: cryptoList, num: 1, crypto: Ethereum,),
+          CurrencyContainer(cryptoList2: cryptoList, num: 2, crypto: Dogecoin,),
           Container(
             height: 150.0,
             alignment: Alignment.center,
             padding: const EdgeInsets.only(bottom: 30.0),
-            color: Colors.lightBlue,
+            color: Colors.lightBlueAccent,
             child: Picker(),
           ),
           Text('the picked one is now: $selected or $dropdownValue: ',
@@ -76,7 +66,6 @@ class _PriceScreenState extends State<PriceScreen> {
     return widgets;
   }
 
-
   //Return a picker widget based on what operation system is running
   Widget Picker() {
     if (kIsWeb) {
@@ -94,7 +83,9 @@ class _PriceScreenState extends State<PriceScreen> {
       return And_Picker(dropdownValue);
     }
   }
+
   CoinData coinData = CoinData();
+
 
   Widget IOS_Picker() {
     //https://rest.coinapi.io/v1/exchangerate/:USD/:BTC
@@ -104,7 +95,7 @@ class _PriceScreenState extends State<PriceScreen> {
           // print('selected: $selectedPicker');
           selected = currenciesList[selectedPicker];
           // print(selected);
-          setState(() async{
+          setState(() async {
             await coinData.getData(selected);
             // costOfSelected = coinData.decodedData['rate'].toString();
           });
@@ -120,9 +111,8 @@ class _PriceScreenState extends State<PriceScreen> {
   Widget And_Picker(String droppedValue) {
     return DropdownButton<String>(
         value: droppedValue,
-        style: const TextStyle(
-            color: Colors.black, textBaseline: TextBaseline.alphabetic),
-        dropdownColor: Colors.white,
+        style: AndPickerStyle,
+        dropdownColor: Colors.lightBlueAccent,
         alignment: AlignmentDirectional.center,
         items: currenciesList.map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
@@ -130,13 +120,11 @@ class _PriceScreenState extends State<PriceScreen> {
             child: Text(value),
           );
         }).toList(),
-        onChanged: (String? value) async{
+        onChanged: (String? value) async {
           // This is called when the user selects an item.
-          print('The selected one from the Android Picker is the $value');
           await coinData.getData(value!);
-          setState((){
+          setState(() {
             dropdownValue = value!;
-            print ('Dropdown value is: $dropdownValue');
             selected = value;
           });
         });
